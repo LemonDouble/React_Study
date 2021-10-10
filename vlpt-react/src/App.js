@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo, useCallback } from "react";
+import React, { useRef, useReducer, useMemo, useCallback } from "react";
 import UserList from "./Chap01_enter_react/UserList";
 import CreateUser from "./Chap01_enter_react/CreateUser";
 
@@ -7,15 +7,12 @@ function countActiveUsers(users) {
   return users.filter((user) => user.active).length;
 }
 
-function App() {
-  const [inputs, setInputs] = useState({
+const initialState = {
+  inputs: {
     username: "",
     email: "",
-  });
-
-  const { username, email } = inputs;
-
-  const [users, setUsers] = useState([
+  },
+  users: [
     {
       id: 1,
       username: "velopert",
@@ -34,60 +31,84 @@ function App() {
       email: "liz@example.com",
       active: false,
     },
-  ]);
+  ],
+};
 
-  // useCallback 사용할 때, 두번째 파라미터인 deps 배열에 함수 내에서 사용하는 props, state를 넣어줘야 한다!
-  // 그렇지 않으면, 해당 값이 항상 최신 값을 참조함을 보장할 수 없다.
-  const onChange = useCallback(
-    (e) => {
-      const { name, value } = e.target;
-      setInputs({
-        ...inputs,
-        [name]: value,
-      });
-    },
-    [inputs]
-  );
+function reducer(state, action) {
+  switch (action.type) {
+    case "CHANGE_INPUT":
+      return {
+        ...state,
+        inputs: {
+          ...state.inputs,
+          [action.name]: action.value,
+        },
+      };
+    case "CREATE_USER":
+      return {
+        inputs: initialState.inputs,
+        users: state.users.concat(action.user),
+      };
+    case "TOGGLE_USER":
+      return {
+        ...state,
+        users: state.users.map((user) =>
+          user.id === action.id ? { ...user, active: !user.active } : user
+        ),
+      };
+    case "REMOVE_USER":
+      return {
+        ...state,
+        users: state.users.filter((user) => user.id !== action.id),
+      };
+    default:
+      return state;
+  }
+}
 
+function App() {
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { users } = state;
+  const { username, email } = state.inputs;
   const nextId = useRef(4);
-  // 이 경우, users.concat을 실행할 때 users가 가장 최신 값을 참조해야 하므로 users를 deps 배열에 넣어주고,
-  // username, email도 새로운 user를 만들어 users 배열에 넣는데 필요하므로 deps 배열에 넣어준다.
-  // 하지만, inputs의 경우에는 setInputs 함수를 통해 초기화를 할 것이므로 가장 최신의 값을 참고할 필요가 없다.
-  const onCreate = useCallback(() => {
-    const user = {
-      id: nextId.current,
-      username,
-      email,
-    };
-    setUsers(users.concat(user));
 
-    setInputs({
-      username: "",
-      email: "",
+  const onChange = useCallback((e) => {
+    const { name, value } = e.target;
+
+    dispatch({
+      type: "CHANGE_INPUT",
+      name,
+      value,
+    });
+  }, []);
+
+  const onCreate = useCallback(() => {
+    dispatch({
+      type: "CREATE_USER",
+      user: {
+        id: nextId.current,
+        username,
+        email,
+      },
     });
     nextId.current += 1;
-  }, [users, username, email]);
+  }, [username, email]);
 
-  const onRemove = useCallback(
-    (id) => {
-      setUsers(users.filter((user) => user.id !== id));
-    },
-    [users]
-  );
+  const onToggle = useCallback((id) => {
+    dispatch({
+      type: "TOGGLE_USER",
+      id,
+    });
+  }, []);
 
-  const onToggle = useCallback(
-    (id) => {
-      setUsers(
-        users.map((user) => {
-          return user.id === id ? { ...user, active: !user.active } : user;
-        })
-      );
-    },
-    [users]
-  );
+  const onRemove = useCallback((id) => {
+    dispatch({
+      type: "REMOVE_USER",
+      id,
+    });
+  }, []);
 
   const count = useMemo(() => countActiveUsers(users), [users]);
-
   return (
     <div>
       <CreateUser
