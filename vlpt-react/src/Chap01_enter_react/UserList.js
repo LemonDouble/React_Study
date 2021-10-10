@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 
-function User({ user, onRemove, onToggle }) {
+const User = React.memo(function User({ user, onRemove, onToggle }) {
   /*
   useEffect(() => {
     console.log("컴포넌트가 화면에 나타남");
@@ -24,6 +24,7 @@ function User({ user, onRemove, onToggle }) {
   // 컴포넌트가 처음 마운트될때, 지정한 값이 바뀔 때, 언마운트, 값이 바뀌기 직전에도 호출됨.
   // 만약, useEffect 안에서 사용하는 상태, props가 있다면 useEffect의 deps에 넣어줘야 한다.
   // 그렇게 하지 않으면, useEffect에 등록한 함수가 실행될 때 최신 props / 상태를 가르키지 않게 된다.
+  /*
   useEffect(() => {
     console.log("user 값이 설정됨");
     console.log(user);
@@ -32,7 +33,7 @@ function User({ user, onRemove, onToggle }) {
       console.log(user);
     };
   }, [user]);
-
+  */
   /*
   만약 두번째 Parameter (deps Array) 생략하면, 리렌더링 될 때마다 호출된다.
   useEffect(() => {
@@ -55,7 +56,7 @@ function User({ user, onRemove, onToggle }) {
       <button onClick={() => onRemove(user.id)}>삭제</button>
     </div>
   );
-}
+});
 
 function UserList({ users, onRemove, onToggle }) {
   return (
@@ -72,4 +73,4 @@ function UserList({ users, onRemove, onToggle }) {
   );
 }
 
-export default UserList;
+export default React.memo(UserList);
