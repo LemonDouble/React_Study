@@ -5,7 +5,6 @@ import { darken, lighten } from "polished";
 const colorStyles = css`
   ${({ theme, color }) => {
     const selected = theme.palette[color];
-
     return css`
       background: ${selected};
       &:hover {
@@ -29,27 +28,27 @@ const colorStyles = css`
   }}
 `;
 
-const sizeStyles = ({ size }) => {
-  const sizes = {
-    large: {
-      height: "3rem",
-      fontSize: "1.25rem",
-    },
-    medium: {
-      height: "2.25rem",
-      fontSize: "1rem",
-    },
-    small: {
-      height: "1.75rem",
-      fontSize: "0.875rem",
-    },
-  };
+const sizes = {
+  large: {
+    height: "3rem",
+    fontSize: "1.25rem",
+  },
+  medium: {
+    height: "2.25rem",
+    fontSize: "1rem",
+  },
+  small: {
+    height: "1.75rem",
+    fontSize: "0.875rem",
+  },
+};
 
-  return css`
+const sizeStyles = css`
+  ${({ size }) => css`
     height: ${sizes[size].height};
     font-size: ${sizes[size].fontSize};
-  `;
-};
+  `}
+`;
 
 const fullWidthStyle = css`
   ${(props) =>
@@ -57,12 +56,17 @@ const fullWidthStyle = css`
     css`
       width: 100%;
       justify-content: center;
-      & + & {
+      &:not(:first-child) {
         margin-left: 0;
         margin-top: 1rem;
       }
     `}
 `;
+
+/*
+원래는 & + &인데, Styled-components 5.2.0부터 코드가 꼬이는 버그가 있다고 한다.
+5.2.1에도 수정되지 않아, &:not(:first-child) 를 사용하면 정상동작함. 
+*/
 
 const StyledButton = styled.button`
   /* 공통 스타일 */
@@ -83,11 +87,10 @@ const StyledButton = styled.button`
   ${colorStyles}
 
   /* 기타 */
-  & + & {
+  &:not(:first-child) {
     margin-left: 1rem;
   }
 
-  /* 풀 사이즈*/
   ${fullWidthStyle}
 `;
 
